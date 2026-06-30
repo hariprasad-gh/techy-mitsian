@@ -19,26 +19,33 @@ app.use(express.urlencoded({ extended: false }));
 // Enable CORS
 app.use(cors());
 
-// Serve uploads folder static files
+// Serve uploads folder
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes files
+// Routes
 const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
 const companyRoutes = require('./routes/company');
 const jobRoutes = require('./routes/job');
 const applicationRoutes = require('./routes/application');
 
-// Mount routes
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 
-// Simple root route
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to TechyPlacement API' });
+// ==============================
+// Serve React Frontend
+// ==============================
+
+const frontendPath = path.join(__dirname, '../frontend/dist');
+
+app.use(express.static(frontendPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 // Error handling middleware
@@ -51,6 +58,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
