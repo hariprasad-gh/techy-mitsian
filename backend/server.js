@@ -7,22 +7,20 @@ const connectDB = require('./config/db');
 // Load environment variables
 dotenv.config();
 
-// Connect to Database
+// Connect to MongoDB
 connectDB();
 
 const app = express();
 
-// Body Parser Middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Enable CORS
 app.use(cors());
 
-// Serve uploads folder
+// Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
+// Import Routes
 const authRoutes = require('./routes/auth');
 const studentRoutes = require('./routes/student');
 const companyRoutes = require('./routes/company');
@@ -36,21 +34,28 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 
-// ==============================
+// ================================
 // Serve React Frontend
-// ==============================
+// ================================
 
 const frontendPath = path.join(__dirname, '../frontend/dist');
 
+// Serve static files
 app.use(express.static(frontendPath));
 
+// For all non-API routes, send React app
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ message: 'API route not found' });
+  }
+
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-// Error handling middleware
+// Error Handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
+
   res.status(err.status || 500).json({
     message: err.message || 'An unexpected server error occurred'
   });
